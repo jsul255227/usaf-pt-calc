@@ -12,6 +12,10 @@ def calculate(request: PTRequest):
     resp = calculate_pt_score(request)
     # Flatten the response for frontend compatibility
     out = {k: v.dict() for k, v in resp.component_scores.items()}
+    # Add top-level keys for points for frontend
+    out["cardio_points"] = resp.component_scores["cardio"].score
+    out["upper_points"] = resp.component_scores["upper"].score
+    out["core_points"] = resp.component_scores["core"].score
     out["total_score"] = resp.total_score
     if resp.message:
         out["message"] = resp.message

@@ -268,7 +268,7 @@ function App() {
 
   return (
     <div style={mobileStyles.container}>
-      <div style={mobileStyles.heading}>USAF PT Test Calculator</div>
+      <div style={mobileStyles.heading}>USAF PT Calc</div>
       <form style={mobileStyles.form} onSubmit={handleSubmit} autoComplete="off">
         <label style={mobileStyles.label}>
           Gender
@@ -372,7 +372,13 @@ function App() {
           {fieldErrors.core && <div style={{color:'#b00020', fontSize:13}}>{fieldErrors.core}</div>}
           {fieldWarnings.core && <div style={{color:'#b08000', fontSize:13}}>{fieldWarnings.core}</div>}
           <span style={{ fontSize: 13, color: '#555', marginLeft: 6 }}>
-            {coreComp === "plank" && minMax.core?.max !== undefined && (
+            {coreComp === "plank" && minMax.core?.min !== undefined && minMax.core?.max !== undefined && (
+              `Min: ${formatMMSS(minMax.core.min)}, Max: ${formatMMSS(minMax.core.max)}`
+            )}
+            {coreComp === "plank" && minMax.core?.min !== undefined && minMax.core?.max === undefined && (
+              `Min: ${formatMMSS(minMax.core.min)}`
+            )}
+            {coreComp === "plank" && minMax.core?.max !== undefined && minMax.core?.min === undefined && (
               `Max: ${formatMMSS(minMax.core.max)}`
             )}
             {coreComp !== "plank" && minMax.core?.min !== undefined && minMax.core?.max !== undefined && (
@@ -384,64 +390,42 @@ function App() {
           Calculate
         </button>
       </form>
-      {/* Results rendering section follows here */}
-      {result && result.cardio && result.upper && result.core && (
+      {error && <div style={mobileStyles.error}>{error}</div>}
+      {result && (
         <div style={mobileStyles.card}>
-          <div style={{ fontWeight: 700, marginBottom: 12, fontSize: 18, color: '#003366' }}>
-            Results
-          </div>
+          <div style={{ fontWeight: 700, marginBottom: 12, fontSize: 18 }}>Results</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <div style={mobileStyles.resultLabel}>Cardio:</div>
-              <div style={{ fontWeight: 500, color: '#222' }}>
-                {result.cardio.component === "run"
-                  ? formatMMSS(result.cardio.value)
-                  : result.cardio.value}
-                {typeof result.cardio.score === 'number' && (
-                  <span style={{ marginLeft: 10, color: '#003366', fontWeight: 600 }}>
-                    | Score: {result.cardio.score}
-                  </span>
-                )}
-              </div>
+            {/* Show individual component points, fallback to 0.00 if missing */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
+              <div style={mobileStyles.resultLabel}>Cardio Points:</div>
+              <div>{(typeof result.cardio_points === 'number' && !isNaN(result.cardio_points)) ? result.cardio_points.toFixed(2) : '0.00'}</div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <div style={mobileStyles.resultLabel}>Upper Body:</div>
-              <div style={{ fontWeight: 500, color: '#222' }}>
-                {result.upper.value}
-                {typeof result.upper.score === 'number' && (
-                  <span style={{ marginLeft: 10, color: '#003366', fontWeight: 600 }}>
-                    | Score: {result.upper.score}
-                  </span>
-                )}
-              </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
+              <div style={mobileStyles.resultLabel}>Upper Points:</div>
+              <div>{(typeof result.upper_points === 'number' && !isNaN(result.upper_points)) ? result.upper_points.toFixed(2) : '0.00'}</div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <div style={mobileStyles.resultLabel}>Core:</div>
-              <div style={{ fontWeight: 500, color: '#222' }}>
-                {result.core.component === "plank"
-                  ? formatMMSS(result.core.value)
-                  : result.core.value}
-                {typeof result.core.score === 'number' && (
-                  <span style={{ marginLeft: 10, color: '#003366', fontWeight: 600 }}>
-                    | Score: {result.core.score}
-                  </span>
-                )}
-              </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
+              <div style={mobileStyles.resultLabel}>Core Points:</div>
+              <div>{(typeof result.core_points === 'number' && !isNaN(result.core_points)) ? result.core_points.toFixed(2) : '0.00'}</div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}>
-              <div style={mobileStyles.resultLabel}>Total Score:</div>
-              <div style={{ fontWeight: 700, color: '#003366', fontSize: 18 }}>
-                {typeof result.total_score === 'number' ? result.total_score.toFixed(1) : '--'}
-                {typeof result.total_score === 'number' && (
-                  <span style={{ marginLeft: 10, fontWeight: 700, fontSize: 18, color: getOverallRating(result.total_score) === 'Excellent' ? '#008000' : getOverallRating(result.total_score) === 'Satisfactory' ? '#b08000' : '#b00020' }}>
-                    {getOverallRating(result.total_score)}
-                  </span>
-                )}
+            {/* Show total score if present */}
+            {result.total_score !== undefined && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16, marginTop: 8 }}>
+                <div style={mobileStyles.resultLabel}>Total Score:</div>
+                <div>{typeof result.total_score === 'number' ? result.total_score.toFixed(2) : result.total_score}</div>
               </div>
-            </div>
+            )}
+          </div>
+          <div style={{ marginTop: 16, fontSize: 16 }}>
+            Overall Rating: <strong>{getOverallRating(result.total_score)}</strong>
           </div>
         </div>
       )}
+      <footer style={{ marginTop: 32, textAlign: 'center', fontSize: 13, color: '#888' }}>
+        For bug reports, suggestions, and feedback, please feel free to email us at <a href="mailto:usafptcalc@protonmail.com" style={{ color: '#003366', textDecoration: 'underline' }}>usafptcalc@protonmail.com</a>.<br />
+        &copy; {new Date().getFullYear()} USAF PT Calc. All rights reserved.<br />
+        This site is not endorsed by the U.S. Air Force.
+      </footer>
     </div>
   );
 }
