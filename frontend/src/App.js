@@ -245,6 +245,14 @@ function App() {
     return null;
   };
 
+  // Helper to get overall rating
+  function getOverallRating(score) {
+    if (typeof score !== 'number') return '';
+    if (score < 75) return 'Unsatisfactory';
+    if (score < 90) return 'Satisfactory';
+    return 'Excellent';
+  }
+
   // Use conditional styles for mobile
   const mobileStyles = isMobile ? {
     container: { ...styles.container, padding: 8, maxWidth: '100vw' },
@@ -364,6 +372,9 @@ function App() {
           {fieldErrors.core && <div style={{color:'#b00020', fontSize:13}}>{fieldErrors.core}</div>}
           {fieldWarnings.core && <div style={{color:'#b08000', fontSize:13}}>{fieldWarnings.core}</div>}
           <span style={{ fontSize: 13, color: '#555', marginLeft: 6 }}>
+            {coreComp === "plank" && minMax.core?.max !== undefined && (
+              `Max: ${formatMMSS(minMax.core.max)}`
+            )}
             {coreComp !== "plank" && minMax.core?.min !== undefined && minMax.core?.max !== undefined && (
               `Min: ${minMax.core.min}, Max: ${minMax.core.max}`
             )}
@@ -372,9 +383,9 @@ function App() {
         <button style={mobileStyles.button} type="submit">
           Calculate
         </button>
-        {error && <div style={mobileStyles.error}>{error}</div>}
       </form>
-      {result && (
+      {/* Results rendering section follows here */}
+      {result && result.cardio && result.upper && result.core && (
         <div style={mobileStyles.card}>
           <div style={{ fontWeight: 700, marginBottom: 12, fontSize: 18, color: '#003366' }}>
             Results
@@ -383,17 +394,49 @@ function App() {
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <div style={mobileStyles.resultLabel}>Cardio:</div>
               <div style={{ fontWeight: 500, color: '#222' }}>
-                {result.cardio.component === "run" ? formatMMSS(result.cardio.value) : result.cardio.value}
+                {result.cardio.component === "run"
+                  ? formatMMSS(result.cardio.value)
+                  : result.cardio.value}
+                {typeof result.cardio.score === 'number' && (
+                  <span style={{ marginLeft: 10, color: '#003366', fontWeight: 600 }}>
+                    | Score: {result.cardio.score}
+                  </span>
+                )}
               </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <div style={mobileStyles.resultLabel}>Upper Body:</div>
-              <div style={{ fontWeight: 500, color: '#222' }}>{result.upper.value}</div>
+              <div style={{ fontWeight: 500, color: '#222' }}>
+                {result.upper.value}
+                {typeof result.upper.score === 'number' && (
+                  <span style={{ marginLeft: 10, color: '#003366', fontWeight: 600 }}>
+                    | Score: {result.upper.score}
+                  </span>
+                )}
+              </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <div style={mobileStyles.resultLabel}>Core:</div>
               <div style={{ fontWeight: 500, color: '#222' }}>
-                {result.core.component === "plank" ? formatMMSS(result.core.value) : result.core.value}
+                {result.core.component === "plank"
+                  ? formatMMSS(result.core.value)
+                  : result.core.value}
+                {typeof result.core.score === 'number' && (
+                  <span style={{ marginLeft: 10, color: '#003366', fontWeight: 600 }}>
+                    | Score: {result.core.score}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}>
+              <div style={mobileStyles.resultLabel}>Total Score:</div>
+              <div style={{ fontWeight: 700, color: '#003366', fontSize: 18 }}>
+                {typeof result.total_score === 'number' ? result.total_score.toFixed(1) : '--'}
+                {typeof result.total_score === 'number' && (
+                  <span style={{ marginLeft: 10, fontWeight: 700, fontSize: 18, color: getOverallRating(result.total_score) === 'Excellent' ? '#008000' : getOverallRating(result.total_score) === 'Satisfactory' ? '#b08000' : '#b00020' }}>
+                    {getOverallRating(result.total_score)}
+                  </span>
+                )}
               </div>
             </div>
           </div>
