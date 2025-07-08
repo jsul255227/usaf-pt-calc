@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import FAQ from "./FAQ";
+import Contact from "./Contact";
+import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 
 const CARDIO_OPTIONS = [
   { key: "run", label: "1.5 Mile Run (mm:ss)", type: "time" },
@@ -44,23 +47,44 @@ function formatMMSS(seconds) {
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
+const palette = {
+  bg: "#f8fafc",
+  card: "#fff",
+  cardShadow: "0 2px 16px 0 rgba(0,0,0,0.08)",
+  text: "#003366",
+  accent: "#174ea6",
+  inputBg: "#fff",
+  inputText: "#003366",
+  inputBorder: "#b0b8c1",
+  label: "#003366",
+  resultLabel: "#174ea6",
+  error: "#b00020",
+  warning: "#b08000",
+  buttonBg: "#003366",
+  buttonText: "#fff",
+  menuBg: "#fff",
+};
+
 const styles = {
   container: {
     maxWidth: 480,
     margin: "2rem auto",
     padding: 24,
     borderRadius: 16,
-    background: "#f8fafc",
-    boxShadow: "0 2px 16px 0 rgba(0,0,0,0.08)",
-    fontFamily: "system-ui, sans-serif",
+    background: palette.bg,
+    boxShadow: palette.cardShadow,
+    fontFamily: "Inter, system-ui, Arial, sans-serif",
+    color: palette.text,
+    position: 'relative',
   },
   heading: {
-    color: "#003366",
+    color: palette.text,
     textAlign: "center",
     marginBottom: 24,
     fontWeight: 700,
     fontSize: 28,
     letterSpacing: 1,
+    fontFamily: "Inter, system-ui, Arial, sans-serif",
   },
   form: {
     display: "flex",
@@ -70,20 +94,24 @@ const styles = {
   label: {
     fontWeight: 500,
     marginBottom: 4,
-    color: "#222",
+    color: palette.label,
+    fontFamily: "Inter, system-ui, Arial, sans-serif",
   },
   input: {
     padding: 10,
     borderRadius: 8,
-    border: "1px solid #b0b8c1",
+    border: `1px solid ${palette.inputBorder}`,
     fontSize: 16,
     marginBottom: 8,
     width: "100%",
     boxSizing: "border-box",
+    background: palette.inputBg,
+    color: palette.inputText,
+    fontFamily: "Inter, system-ui, Arial, sans-serif",
   },
   button: {
-    background: "#003366",
-    color: "#fff",
+    background: palette.buttonBg,
+    color: palette.buttonText,
     border: "none",
     borderRadius: 8,
     padding: "12px 0",
@@ -92,32 +120,31 @@ const styles = {
     marginTop: 8,
     cursor: "pointer",
     transition: "background 0.2s",
+    fontFamily: "Inter, system-ui, Arial, sans-serif",
   },
   card: {
-    background: "#fff",
+    background: palette.card,
     borderRadius: 12,
-    boxShadow: "0 1px 6px 0 rgba(0,0,0,0.06)",
+    boxShadow: palette.cardShadow,
     padding: 16,
     marginTop: 20,
+    fontFamily: "Inter, system-ui, Arial, sans-serif",
   },
   resultLabel: {
     fontWeight: 600,
-    color: "#003366",
+    color: palette.resultLabel,
     marginRight: 8,
+    fontFamily: "Inter, system-ui, Arial, sans-serif",
   },
   error: {
-    color: "#b00020",
+    color: palette.error,
     marginTop: 16,
     textAlign: "center",
-  },
-  '@media (maxWidth: 600px)': {
-    container: { padding: 8, maxWidth: '98vw' },
-    heading: { fontSize: 22 },
-    button: { fontSize: 16 },
+    fontFamily: "Inter, system-ui, Arial, sans-serif",
   },
 };
 
-function App() {
+function AppContent() {
   const [gender, setGender] = useState("male");
   const [age, setAge] = useState(25);
   const [cardioComp, setCardioComp] = useState("run");
@@ -130,6 +157,7 @@ function App() {
   const [fieldErrors, setFieldErrors] = useState({});
   const [fieldWarnings, setFieldWarnings] = useState({});
   const [isMobile, setIsMobile] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
     // Mobile detection
@@ -231,6 +259,7 @@ function App() {
         body: JSON.stringify(req),
       });
       const data = await res.json();
+      console.log('API /api/pt/calculate response:', data); // DEBUG
       if (res.ok) setResult(data);
       else setError(data.message || "Error");
     } catch (err) {
@@ -245,188 +274,253 @@ function App() {
     return null;
   };
 
-  // Helper to get overall rating
-  function getOverallRating(score) {
-    if (typeof score !== 'number') return '';
-    if (score < 75) return 'Unsatisfactory';
-    if (score < 90) return 'Satisfactory';
-    return 'Excellent';
-  }
+  // Helper to get min/max for current selection, with mm:ss formatting for run/plank
+  const getMinMax = (cat) => {
+    const mm = minMax[cat] || {};
+    if (cat === "cardio" && cardioComp === "run" && mm.max !== undefined) {
+      // Only show max for run, in mm:ss
+      return `Max: ${formatMMSS(mm.max)}`;
+    }
+    if (cat === "core" && coreComp === "plank" && mm.min !== undefined && mm.max !== undefined) {
+      // Show min/max for plank, in mm:ss
+      return `Min: ${formatMMSS(mm.min)}, Max: ${formatMMSS(mm.max)}`;
+    }
+    // All other cases: show min/max as numbers
+    if (mm.min !== undefined && mm.max !== undefined) {
+      return `Min: ${mm.min}, Max: ${mm.max}`;
+    }
+    if (mm.max !== undefined) {
+      return `Max: ${mm.max}`;
+    }
+    return null;
+  };
 
-  // Use conditional styles for mobile
-  const mobileStyles = isMobile ? {
-    container: { ...styles.container, padding: 8, maxWidth: '100vw' },
-    heading: { ...styles.heading, fontSize: 22 },
-    input: { ...styles.input, fontSize: 20, padding: 16, minHeight: 48 },
-    button: { ...styles.button, fontSize: 20, padding: '18px 0', minHeight: 56, touchAction: 'manipulation' },
-    label: { ...styles.label, fontSize: 18 },
-    form: { ...styles.form, gap: 24 },
-    card: { ...styles.card, fontSize: 18 },
-    resultLabel: { ...styles.resultLabel, fontSize: 18 },
-    error: { ...styles.error, fontSize: 16 },
-  } : styles;
+  // Helper to get overall rating
+  const getOverallRating = (score) => {
+    if (score === undefined || score === null) return "--";
+    if (score < 75) return "Unsatisfactory";
+    if (score < 90) return "Satisfactory";
+    return "Excellent";
+  };
 
   return (
-    <div style={mobileStyles.container}>
-      <div style={mobileStyles.heading}>USAF PT Calc</div>
-      <form style={mobileStyles.form} onSubmit={handleSubmit} autoComplete="off">
-        <label style={mobileStyles.label}>
-          Gender
+    <div style={styles.container}>
+      <div style={{ ...styles.heading, fontSize: 36, marginBottom: 32, letterSpacing: 0 }}>USAF PT Calc</div>
+      <form onSubmit={handleSubmit} style={styles.form}>
+        {/* Gender */}
+        <div>
+          <div style={styles.label}>Gender</div>
           <select
-            style={mobileStyles.input}
+            name="gender"
             value={gender}
             onChange={e => setGender(e.target.value)}
+            style={styles.input}
           >
             <option value="male">Male</option>
             <option value="female">Female</option>
           </select>
-        </label>
-        <label style={mobileStyles.label}>
-          Age
+        </div>
+        {/* Age */}
+        <div>
+          <div style={styles.label}>Age</div>
           <input
-            style={mobileStyles.input}
             type="number"
+            name="age"
             value={age}
-            min={17}
-            max={100}
             onChange={e => setAge(e.target.value)}
-            required
-            inputMode="numeric"
+            min={10}
+            max={100}
+            style={styles.input}
           />
-        </label>
-        {/* Cardio selection */}
-        <label style={mobileStyles.label}>
-          Cardio Component
-          <select style={mobileStyles.input} value={cardioComp} onChange={e => setCardioComp(e.target.value)}>
-            {CARDIO_OPTIONS.map(opt => <option key={opt.key} value={opt.key}>{opt.label}</option>)}
+        </div>
+        {/* Cardio Component */}
+        <div>
+          <div style={styles.label}>Cardio Component</div>
+          <select
+            name="cardioComp"
+            value={cardioComp}
+            onChange={e => setCardioComp(e.target.value)}
+            style={styles.input}
+          >
+            {CARDIO_OPTIONS.map(opt => (
+              <option key={opt.key} value={opt.key}>
+                {opt.label}
+              </option>
+            ))}
           </select>
-        </label>
-        <label style={mobileStyles.label}>
-          {getOption("cardio", cardioComp).label}
+        </div>
+        {/* Cardio Value */}
+        <div>
+          <div style={styles.label}>{CARDIO_OPTIONS.find(opt => opt.key === cardioComp)?.label}</div>
           <input
-            style={{...mobileStyles.input, borderColor: fieldErrors.cardio ? '#b00020' : mobileStyles.input.borderColor}}
-            type={getOption("cardio", cardioComp).type === "time" ? "text" : getOption("cardio", cardioComp).type}
+            type={cardioComp === "run" ? "text" : "number"}
             name={cardioComp}
             value={values[cardioComp]}
             onChange={handleChange}
-            placeholder={getOption("cardio", cardioComp).type === "time" ? "mm:ss" : undefined}
-            required
-            inputMode={getOption("cardio", cardioComp).type === "number" ? "numeric" : undefined}
+            style={styles.input}
+            placeholder={cardioComp === "run" ? "mm:ss" : undefined}
           />
-          {fieldErrors.cardio && <div style={{color:'#b00020', fontSize:13}}>{fieldErrors.cardio}</div>}
-          {fieldWarnings.cardio && <div style={{color:'#b08000', fontSize:13}}>{fieldWarnings.cardio}</div>}
-          <span style={{ fontSize: 13, color: '#555', marginLeft: 6 }}>
-            {cardioComp === "run" && minMax.cardio?.max !== undefined && (
-              `Max: ${formatMMSS(minMax.cardio.max)}`
-            )}
-            {cardioComp !== "run" && minMax.cardio?.min !== undefined && minMax.cardio?.max !== undefined && (
-              `Min: ${minMax.cardio.min}, Max: ${minMax.cardio.max}`
-            )}
-          </span>
-        </label>
-        {/* Upper selection */}
-        <label style={mobileStyles.label}>
-          Upper Body Component
-          <select style={mobileStyles.input} value={upperComp} onChange={e => setUpperComp(e.target.value)}>
-            {UPPER_OPTIONS.map(opt => <option key={opt.key} value={opt.key}>{opt.label}</option>)}
+          <div style={{ fontSize: 15, color: palette.label, marginTop: 2 }}>{getMinMax("cardio")}</div>
+          {fieldErrors.cardio && <div style={styles.error}>{fieldErrors.cardio}</div>}
+          {fieldWarnings.cardio && <div style={{ ...styles.error, color: palette.warning }}>{fieldWarnings.cardio}</div>}
+        </div>
+        {/* Upper Component */}
+        <div>
+          <div style={styles.label}>Upper Body Component</div>
+          <select
+            name="upperComp"
+            value={upperComp}
+            onChange={e => setUpperComp(e.target.value)}
+            style={styles.input}
+          >
+            {UPPER_OPTIONS.map(opt => (
+              <option key={opt.key} value={opt.key}>
+                {opt.label}
+              </option>
+            ))}
           </select>
-        </label>
-        <label style={mobileStyles.label}>
-          {getOption("upper", upperComp).label}
+        </div>
+        {/* Upper Value */}
+        <div>
+          <div style={styles.label}>{UPPER_OPTIONS.find(opt => opt.key === upperComp)?.label}</div>
           <input
-            style={{...mobileStyles.input, borderColor: fieldErrors.upper ? '#b00020' : mobileStyles.input.borderColor}}
-            type={getOption("upper", upperComp).type}
+            type="number"
             name={upperComp}
             value={values[upperComp]}
             onChange={handleChange}
-            required
-            inputMode={getOption("upper", upperComp).type === "number" ? "numeric" : undefined}
+            style={styles.input}
           />
-          {fieldErrors.upper && <div style={{color:'#b00020', fontSize:13}}>{fieldErrors.upper}</div>}
-          {fieldWarnings.upper && <div style={{color:'#b08000', fontSize:13}}>{fieldWarnings.upper}</div>}
-          <span style={{ fontSize: 13, color: '#555', marginLeft: 6 }}>
-            {minMax.upper?.min !== undefined && minMax.upper?.max !== undefined && (
-              `Min: ${minMax.upper.min}, Max: ${minMax.upper.max}`
-            )}
-          </span>
-        </label>
-        {/* Core selection */}
-        <label style={mobileStyles.label}>
-          Core Component
-          <select style={mobileStyles.input} value={coreComp} onChange={e => setCoreComp(e.target.value)}>
-            {CORE_OPTIONS.map(opt => <option key={opt.key} value={opt.key}>{opt.label}</option>)}
+          <div style={{ fontSize: 15, color: palette.label, marginTop: 2 }}>{getMinMax("upper")}</div>
+          {fieldErrors.upper && <div style={styles.error}>{fieldErrors.upper}</div>}
+          {fieldWarnings.upper && <div style={{ ...styles.error, color: palette.warning }}>{fieldWarnings.upper}</div>}
+        </div>
+        {/* Core Component */}
+        <div>
+          <div style={styles.label}>Core Component</div>
+          <select
+            name="coreComp"
+            value={coreComp}
+            onChange={e => setCoreComp(e.target.value)}
+            style={styles.input}
+          >
+            {CORE_OPTIONS.map(opt => (
+              <option key={opt.key} value={opt.key}>
+                {opt.label}
+              </option>
+            ))}
           </select>
-        </label>
-        <label style={mobileStyles.label}>
-          {getOption("core", coreComp).label}
+        </div>
+        {/* Core Value */}
+        <div>
+          <div style={styles.label}>{CORE_OPTIONS.find(opt => opt.key === coreComp)?.label}</div>
           <input
-            style={{...mobileStyles.input, borderColor: fieldErrors.core ? '#b00020' : mobileStyles.input.borderColor}}
-            type={getOption("core", coreComp).type === "time" ? "text" : getOption("core", coreComp).type}
+            type={coreComp === "plank" ? "text" : "number"}
             name={coreComp}
             value={values[coreComp]}
             onChange={handleChange}
-            placeholder={getOption("core", coreComp).type === "time" ? "mm:ss" : undefined}
-            required
-            inputMode={getOption("core", coreComp).type === "number" ? "numeric" : undefined}
+            style={styles.input}
+            placeholder={coreComp === "plank" ? "mm:ss" : undefined}
           />
-          {fieldErrors.core && <div style={{color:'#b00020', fontSize:13}}>{fieldErrors.core}</div>}
-          {fieldWarnings.core && <div style={{color:'#b08000', fontSize:13}}>{fieldWarnings.core}</div>}
-          <span style={{ fontSize: 13, color: '#555', marginLeft: 6 }}>
-            {coreComp === "plank" && minMax.core?.min !== undefined && minMax.core?.max !== undefined && (
-              `Min: ${formatMMSS(minMax.core.min)}, Max: ${formatMMSS(minMax.core.max)}`
-            )}
-            {coreComp === "plank" && minMax.core?.min !== undefined && minMax.core?.max === undefined && (
-              `Min: ${formatMMSS(minMax.core.min)}`
-            )}
-            {coreComp === "plank" && minMax.core?.max !== undefined && minMax.core?.min === undefined && (
-              `Max: ${formatMMSS(minMax.core.max)}`
-            )}
-            {coreComp !== "plank" && minMax.core?.min !== undefined && minMax.core?.max !== undefined && (
-              `Min: ${minMax.core.min}, Max: ${minMax.core.max}`
-            )}
-          </span>
-        </label>
-        <button style={mobileStyles.button} type="submit">
+          <div style={{ fontSize: 15, color: palette.label, marginTop: 2 }}>{getMinMax("core")}</div>
+          {fieldErrors.core && <div style={styles.error}>{fieldErrors.core}</div>}
+          {fieldWarnings.core && <div style={{ ...styles.error, color: palette.warning }}>{fieldWarnings.core}</div>}
+        </div>
+        <button type="submit" style={{ ...styles.button, fontSize: 28, marginTop: 24, borderRadius: 12, background: '#0a2d5c' }}>
           Calculate
         </button>
+        {error && <div style={styles.error}>{error}</div>}
       </form>
-      {error && <div style={mobileStyles.error}>{error}</div>}
+      {/* Results Section */}
       {result && (
-        <div style={mobileStyles.card}>
-          <div style={{ fontWeight: 700, marginBottom: 12, fontSize: 18 }}>Results</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {/* Show individual component points, fallback to 0.00 if missing */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
-              <div style={mobileStyles.resultLabel}>Cardio Points:</div>
-              <div>{(typeof result.cardio_points === 'number' && !isNaN(result.cardio_points)) ? result.cardio_points.toFixed(2) : '0.00'}</div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
-              <div style={mobileStyles.resultLabel}>Upper Points:</div>
-              <div>{(typeof result.upper_points === 'number' && !isNaN(result.upper_points)) ? result.upper_points.toFixed(2) : '0.00'}</div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
-              <div style={mobileStyles.resultLabel}>Core Points:</div>
-              <div>{(typeof result.core_points === 'number' && !isNaN(result.core_points)) ? result.core_points.toFixed(2) : '0.00'}</div>
-            </div>
-            {/* Show total score if present */}
-            {result.total_score !== undefined && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16, marginTop: 8 }}>
-                <div style={mobileStyles.resultLabel}>Total Score:</div>
-                <div>{typeof result.total_score === 'number' ? result.total_score.toFixed(2) : result.total_score}</div>
-              </div>
-            )}
-          </div>
-          <div style={{ marginTop: 16, fontSize: 16 }}>
-            Overall Rating: <strong>{getOverallRating(result.total_score)}</strong>
+        <div style={styles.card}>
+          <div style={styles.resultLabel}>Results</div>
+          <div style={{ margin: "8px 0", color: palette.text }}>
+            <div>Cardio Points: {result.cardio_points !== undefined ? result.cardio_points.toFixed(2) : "--"}</div>
+            <div>Upper Points: {result.upper_points !== undefined ? result.upper_points.toFixed(2) : "--"}</div>
+            <div>Core Points: {result.core_points !== undefined ? result.core_points.toFixed(2) : "--"}</div>
+            <div>Total Score: {result.total_score !== undefined ? result.total_score.toFixed(2) : "--"}</div>
+            <div>Overall Rating: {getOverallRating(result.total_score)}</div>
           </div>
         </div>
       )}
-      <footer style={{ marginTop: 32, textAlign: 'center', fontSize: 13, color: '#888' }}>
-        For bug reports, suggestions, and feedback, please feel free to email us at <a href="mailto:usafptcalc@protonmail.com" style={{ color: '#003366', textDecoration: 'underline' }}>usafptcalc@protonmail.com</a>.<br />
-        &copy; {new Date().getFullYear()} USAF PT Calc. All rights reserved.<br />
-        This site is not endorsed by the U.S. Air Force.
+      {/* Footer */}
+      <footer style={{ marginTop: 40, fontSize: 15, color: palette.text, textAlign: "center", opacity: 0.85 }}>
+        <div>For bug reports, suggestions, and feedback, please feel free to email us at <a href="mailto:usafptcalc@protonmail.com" style={{ color: palette.accent, textDecoration: "underline" }}>usafptcalc@protonmail.com</a>.</div>
+        <div>© 2025 USAF PT Calc. All rights reserved.</div>
+        <div>This site is not endorsed by the U.S. Air Force.</div>
       </footer>
+      {/* Menu Button */}
+      <button
+        onClick={() => setShowMenu(!showMenu)}
+        style={{
+          position: "fixed",
+          top: 24,
+          right: 24,
+          zIndex: 2100,
+          background: "#174ea6",
+          color: "#fff",
+          border: "none",
+          borderRadius: "50%",
+          width: 48,
+          height: 48,
+          fontSize: 28,
+          cursor: "pointer",
+        }}
+        aria-label="Open menu"
+      >
+        ☰
+      </button>
+      {/* Slide-out Menu */}
+      {showMenu && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            right: 0,
+            width: 260,
+            height: "100vh",
+            background: "#fff",
+            boxShadow: "-2px 0 16px 0 rgba(0,0,0,0.12)",
+            zIndex: 2000,
+            padding: 24,
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+          }}
+        >
+          <button
+            onClick={() => setShowMenu(false)}
+            style={{
+              background: "none",
+              border: "none",
+              fontSize: 28,
+              color: "#174ea6",
+              alignSelf: "flex-end",
+              cursor: "pointer",
+            }}
+            aria-label="Close menu"
+          >
+            ×
+          </button>
+          <Link to="/faq" style={{ color: "#174ea6", textDecoration: "none", fontWeight: 600 }}>FAQ</Link>
+          <Link to="/contact" style={{ color: "#174ea6", textDecoration: "none", fontWeight: 600 }}>Contact</Link>
+          <a href="https://www.afpc.af.mil/Portals/70/documents/FITNESS/dafman36-2905.pdf" target="_blank" rel="noopener noreferrer" style={{ color: "#174ea6", textDecoration: "none", fontWeight: 600 }}>DAFMAN 36-2905</a>
+          <a href="https://www.afpc.af.mil/Portals/70/documents/FITNESS/5%20Year%20Chart%20Scoring%20Including%20Optional%20Component%20Standards%20-%2020211111%200219.pdf" target="_blank" rel="noopener noreferrer" style={{ color: "#174ea6", textDecoration: "none", fontWeight: 600 }}>Scoring Charts</a>
+        </div>
+      )}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="*" element={<AppContent />} />
+      </Routes>
+    </Router>
   );
 }
 
