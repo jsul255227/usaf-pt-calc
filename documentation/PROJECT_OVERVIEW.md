@@ -26,7 +26,7 @@ A professional, modular, and accurate web application for calculating United Sta
 - Modern, responsive layout with mobile/touch-friendly design.
 - All form fields grouped for minimal vertical scrolling.
 - Live result card updates instantly as user enters data.
-- Requirements for each component (min/max) shown live based on age/gender selection.
+- Requirements for each component (min/max) execpt run (max only)shown live based on age/gender selection.
 - HTML5 and JS validation for all fields, including time auto-formatting (mm:ss).
 - Error messages shown for invalid input or backend errors.
 
@@ -57,6 +57,40 @@ A professional, modular, and accurate web application for calculating United Sta
   This site is not endorsed by the U.S. Air Force.
 
 - The footer must appear below the results section and match the style in the production app and screenshots.
+
+## Additional Features & UI/UX
+
+- **Slide-out Menu:**
+  - Modern, mobile-friendly slide-out menu accessible from a fixed button.
+  - Menu includes links to: FAQ, Contact, DAFMAN 36-2905 (official PDF), and Scoring Charts (official PDF).
+  - All external links open in a new tab.
+
+- **FAQ and Contact Pages:**
+  - Dedicated FAQ page with detailed, user-friendly answers to common PT test questions.
+  - Dedicated Contact page with project email and legal disclaimer.
+  - Both pages feature a fixed back arrow button (styled and positioned like the menu button) for easy navigation back to the main app.
+
+- **Client-side Routing:**
+  - Uses React Router for seamless navigation between main app, FAQ, and Contact pages without full page reloads.
+
+- **Accessibility & Usability:**
+  - All navigation buttons and links have accessible labels.
+  - Back/menu buttons are large, touch-friendly, and always visible in the same location for consistency.
+
+- **Input Auto-formatting:**
+  - Time fields (run, plank) auto-format to mm:ss as the user types, accepting a variety of input styles.
+
+- **Live Min/Max Requirements Display:**
+  - Requirements for each selected component are shown live, with correct formatting (mm:ss for time-based events).
+
+- **Field Validation & Warnings:**
+  - Real-time error and warning messages for invalid or out-of-range input, with clear explanations.
+
+- **Mobile Detection:**
+  - UI adapts for mobile/touch devices for optimal usability.
+
+- **Footer:**
+  - Footer is always present, styled, and includes contact email, copyright, and disclaimer.
 
 ---
 **Last updated:** July 6, 2025

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import FAQ from "./FAQ";
 import Contact from "./Contact";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
+import { Helmet } from "react-helmet";
 
 const CARDIO_OPTIONS = [
   { key: "run", label: "1.5 Mile Run (mm:ss)", type: "time" },
@@ -47,104 +48,45 @@ function formatMMSS(seconds) {
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
-const palette = {
-  bg: "#f8fafc",
-  card: "#fff",
-  cardShadow: "0 2px 16px 0 rgba(0,0,0,0.08)",
-  text: "#003366",
-  accent: "#174ea6",
-  inputBg: "#fff",
-  inputText: "#003366",
-  inputBorder: "#b0b8c1",
-  label: "#003366",
-  resultLabel: "#174ea6",
-  error: "#b00020",
-  warning: "#b08000",
-  buttonBg: "#003366",
-  buttonText: "#fff",
-  menuBg: "#fff",
-};
+function getPalette(isDark) {
+  return isDark
+    ? {
+        bg: "#101624",
+        card: "#181f2e",
+        cardShadow: "0 2px 16px 0 rgba(0,0,0,0.32)",
+        text: "#e3e8f0",
+        accent: "#7bb0ff",
+        inputBg: "#181f2e",
+        inputText: "#e3e8f0",
+        inputBorder: "#3a4660",
+        label: "#b3c6e0",
+        resultLabel: "#7bb0ff",
+        error: "#ff6b6b",
+        warning: "#ffd166",
+        buttonBg: "#223366",
+        buttonText: "#fff",
+        menuBg: "#181f2e",
+      }
+    : {
+        bg: "#f8fafc",
+        card: "#fff",
+        cardShadow: "0 2px 16px 0 rgba(0,0,0,0.08)",
+        text: "#003366",
+        accent: "#174ea6",
+        inputBg: "#fff",
+        inputText: "#003366",
+        inputBorder: "#b0b8c1",
+        label: "#003366",
+        resultLabel: "#174ea6",
+        error: "#b00020",
+        warning: "#b08000",
+        buttonBg: "#003366",
+        buttonText: "#fff",
+        menuBg: "#fff",
+      };
+}
 
-const styles = {
-  container: {
-    maxWidth: 480,
-    margin: "2rem auto",
-    padding: 24,
-    borderRadius: 16,
-    background: palette.bg,
-    boxShadow: palette.cardShadow,
-    fontFamily: "Inter, system-ui, Arial, sans-serif",
-    color: palette.text,
-    position: 'relative',
-  },
-  heading: {
-    color: palette.text,
-    textAlign: "center",
-    marginBottom: 24,
-    fontWeight: 700,
-    fontSize: 28,
-    letterSpacing: 1,
-    fontFamily: "Inter, system-ui, Arial, sans-serif",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 16,
-  },
-  label: {
-    fontWeight: 500,
-    marginBottom: 4,
-    color: palette.label,
-    fontFamily: "Inter, system-ui, Arial, sans-serif",
-  },
-  input: {
-    padding: 10,
-    borderRadius: 8,
-    border: `1px solid ${palette.inputBorder}`,
-    fontSize: 16,
-    marginBottom: 8,
-    width: "100%",
-    boxSizing: "border-box",
-    background: palette.inputBg,
-    color: palette.inputText,
-    fontFamily: "Inter, system-ui, Arial, sans-serif",
-  },
-  button: {
-    background: palette.buttonBg,
-    color: palette.buttonText,
-    border: "none",
-    borderRadius: 8,
-    padding: "12px 0",
-    fontWeight: 600,
-    fontSize: 18,
-    marginTop: 8,
-    cursor: "pointer",
-    transition: "background 0.2s",
-    fontFamily: "Inter, system-ui, Arial, sans-serif",
-  },
-  card: {
-    background: palette.card,
-    borderRadius: 12,
-    boxShadow: palette.cardShadow,
-    padding: 16,
-    marginTop: 20,
-    fontFamily: "Inter, system-ui, Arial, sans-serif",
-  },
-  resultLabel: {
-    fontWeight: 600,
-    color: palette.resultLabel,
-    marginRight: 8,
-    fontFamily: "Inter, system-ui, Arial, sans-serif",
-  },
-  error: {
-    color: palette.error,
-    marginTop: 16,
-    textAlign: "center",
-    fontFamily: "Inter, system-ui, Arial, sans-serif",
-  },
-};
-
-function AppContent() {
+function AppContent({ darkMode, setDarkMode }) {
   const [gender, setGender] = useState("male");
   const [age, setAge] = useState(25);
   const [cardioComp, setCardioComp] = useState("run");
@@ -168,6 +110,11 @@ function AppContent() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  useEffect(() => {
+    // Update body background on darkMode change
+    document.body.style.background = getPalette(darkMode).bg;
+  }, [darkMode]);
 
   // Fetch min/max when gender, age, or component selection changes
   useEffect(() => {
@@ -269,8 +216,8 @@ function AppContent() {
 
   const getOption = (cat, key) => {
     if (cat === "cardio") return CARDIO_OPTIONS.find(o => o.key === key);
-    if (cat === "upper") return UPPER_OPTIONS.find(o => o.key === key);
-    if (cat === "core") return CORE_OPTIONS.find(o => o.key === key);
+    if (cat === "upper" ) return UPPER_OPTIONS.find(o => o.key === key);
+    if (cat === "core" ) return CORE_OPTIONS.find(o => o.key === key);
     return null;
   };
 
@@ -303,222 +250,383 @@ function AppContent() {
     return "Excellent";
   };
 
+  const palette = getPalette(darkMode);
+  const styles = {
+    container: {
+      maxWidth: 480,
+      margin: "2rem auto",
+      padding: 24,
+      borderRadius: 16,
+      background: palette.bg,
+      boxShadow: palette.cardShadow,
+      fontFamily: "Inter, system-ui, Arial, sans-serif",
+      color: palette.text,
+      position: 'relative',
+    },
+    heading: {
+      color: palette.text,
+      textAlign: "center",
+      marginBottom: 24,
+      fontWeight: 700,
+      fontSize: 28,
+      letterSpacing: 1,
+      fontFamily: "Inter, system-ui, Arial, sans-serif",
+    },
+    form: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 16,
+    },
+    label: {
+      fontWeight: 500,
+      marginBottom: 4,
+      color: palette.label,
+      fontFamily: "Inter, system-ui, Arial, sans-serif",
+    },
+    input: {
+      padding: 10,
+      borderRadius: 8,
+      border: `1px solid ${palette.inputBorder}`,
+      fontSize: 16,
+      marginBottom: 8,
+      width: "100%",
+      boxSizing: "border-box",
+      background: palette.inputBg,
+      color: palette.inputText,
+      fontFamily: "Inter, system-ui, Arial, sans-serif",
+    },
+    button: {
+      background: palette.buttonBg,
+      color: palette.buttonText,
+      border: "none",
+      borderRadius: 8,
+      padding: "12px 0",
+      fontWeight: 600,
+      fontSize: 18,
+      marginTop: 8,
+      cursor: "pointer",
+      transition: "background 0.2s",
+      fontFamily: "Inter, system-ui, Arial, sans-serif",
+    },
+    card: {
+      background: palette.card,
+      borderRadius: 12,
+      boxShadow: palette.cardShadow,
+      padding: 16,
+      marginTop: 20,
+      fontFamily: "Inter, system-ui, Arial, sans-serif",
+    },
+    resultLabel: {
+      fontWeight: 600,
+      color: palette.resultLabel,
+      marginRight: 8,
+      fontFamily: "Inter, system-ui, Arial, sans-serif",
+    },
+    error: {
+      color: palette.error,
+      marginTop: 16,
+      textAlign: "center",
+      fontFamily: "Inter, system-ui, Arial, sans-serif",
+    },
+  };
+
   return (
-    <div style={styles.container}>
-      <div style={{ ...styles.heading, fontSize: 36, marginBottom: 32, letterSpacing: 0 }}>USAF PT Calc</div>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        {/* Gender */}
-        <div>
-          <div style={styles.label}>Gender</div>
-          <select
-            name="gender"
-            value={gender}
-            onChange={e => setGender(e.target.value)}
-            style={styles.input}
-          >
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-          </select>
-        </div>
-        {/* Age */}
-        <div>
-          <div style={styles.label}>Age</div>
-          <input
-            type="number"
-            name="age"
-            value={age}
-            onChange={e => setAge(e.target.value)}
-            min={10}
-            max={100}
-            style={styles.input}
-          />
-        </div>
-        {/* Cardio Component */}
-        <div>
-          <div style={styles.label}>Cardio Component</div>
-          <select
-            name="cardioComp"
-            value={cardioComp}
-            onChange={e => setCardioComp(e.target.value)}
-            style={styles.input}
-          >
-            {CARDIO_OPTIONS.map(opt => (
-              <option key={opt.key} value={opt.key}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        {/* Cardio Value */}
-        <div>
-          <div style={styles.label}>{CARDIO_OPTIONS.find(opt => opt.key === cardioComp)?.label}</div>
-          <input
-            type={cardioComp === "run" ? "text" : "number"}
-            name={cardioComp}
-            value={values[cardioComp]}
-            onChange={handleChange}
-            style={styles.input}
-            placeholder={cardioComp === "run" ? "mm:ss" : undefined}
-          />
-          <div style={{ fontSize: 15, color: palette.label, marginTop: 2 }}>{getMinMax("cardio")}</div>
-          {fieldErrors.cardio && <div style={styles.error}>{fieldErrors.cardio}</div>}
-          {fieldWarnings.cardio && <div style={{ ...styles.error, color: palette.warning }}>{fieldWarnings.cardio}</div>}
-        </div>
-        {/* Upper Component */}
-        <div>
-          <div style={styles.label}>Upper Body Component</div>
-          <select
-            name="upperComp"
-            value={upperComp}
-            onChange={e => setUpperComp(e.target.value)}
-            style={styles.input}
-          >
-            {UPPER_OPTIONS.map(opt => (
-              <option key={opt.key} value={opt.key}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        {/* Upper Value */}
-        <div>
-          <div style={styles.label}>{UPPER_OPTIONS.find(opt => opt.key === upperComp)?.label}</div>
-          <input
-            type="number"
-            name={upperComp}
-            value={values[upperComp]}
-            onChange={handleChange}
-            style={styles.input}
-          />
-          <div style={{ fontSize: 15, color: palette.label, marginTop: 2 }}>{getMinMax("upper")}</div>
-          {fieldErrors.upper && <div style={styles.error}>{fieldErrors.upper}</div>}
-          {fieldWarnings.upper && <div style={{ ...styles.error, color: palette.warning }}>{fieldWarnings.upper}</div>}
-        </div>
-        {/* Core Component */}
-        <div>
-          <div style={styles.label}>Core Component</div>
-          <select
-            name="coreComp"
-            value={coreComp}
-            onChange={e => setCoreComp(e.target.value)}
-            style={styles.input}
-          >
-            {CORE_OPTIONS.map(opt => (
-              <option key={opt.key} value={opt.key}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        {/* Core Value */}
-        <div>
-          <div style={styles.label}>{CORE_OPTIONS.find(opt => opt.key === coreComp)?.label}</div>
-          <input
-            type={coreComp === "plank" ? "text" : "number"}
-            name={coreComp}
-            value={values[coreComp]}
-            onChange={handleChange}
-            style={styles.input}
-            placeholder={coreComp === "plank" ? "mm:ss" : undefined}
-          />
-          <div style={{ fontSize: 15, color: palette.label, marginTop: 2 }}>{getMinMax("core")}</div>
-          {fieldErrors.core && <div style={styles.error}>{fieldErrors.core}</div>}
-          {fieldWarnings.core && <div style={{ ...styles.error, color: palette.warning }}>{fieldWarnings.core}</div>}
-        </div>
-        <button type="submit" style={{ ...styles.button, fontSize: 28, marginTop: 24, borderRadius: 12, background: '#0a2d5c' }}>
-          Calculate
-        </button>
-        {error && <div style={styles.error}>{error}</div>}
-      </form>
-      {/* Results Section */}
-      {result && (
-        <div style={styles.card}>
-          <div style={styles.resultLabel}>Results</div>
-          <div style={{ margin: "8px 0", color: palette.text }}>
-            <div>Cardio Points: {result.cardio_points !== undefined ? result.cardio_points.toFixed(2) : "--"}</div>
-            <div>Upper Points: {result.upper_points !== undefined ? result.upper_points.toFixed(2) : "--"}</div>
-            <div>Core Points: {result.core_points !== undefined ? result.core_points.toFixed(2) : "--"}</div>
-            <div>Total Score: {result.total_score !== undefined ? result.total_score.toFixed(2) : "--"}</div>
-            <div>Overall Rating: {getOverallRating(result.total_score)}</div>
+    <>
+      <Helmet>
+        <title>USAF PT Calculator</title>
+        <meta name="description" content="A modern, minimalistic USAF PT calculator for Air Force fitness test scoring. Mobile-friendly, fast, and easy to use." />
+        <meta property="og:title" content="USAF PT Calculator" />
+        <meta property="og:description" content="A modern, minimalistic USAF PT calculator for Air Force fitness test scoring. Mobile-friendly, fast, and easy to use." />
+        <meta property="og:type" content="website" />
+      </Helmet>
+      <div style={{
+        minHeight: "100vh",
+        background: palette.bg,
+        transition: "background 0.3s",
+      }}>
+        <div style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "flex-start",
+          minHeight: "100vh",
+          padding: isMobile ? 0 : "48px 0",
+          background: palette.bg,
+          transition: "background 0.3s",
+        }}>
+          <div style={styles.container}>
+            <div style={{ ...styles.heading, fontSize: 36, marginBottom: 32, letterSpacing: 0 }}>USAF PT Calc</div>
+            <form onSubmit={handleSubmit} style={styles.form}>
+              {/* Gender */}
+              <div>
+                <div style={styles.label}>Gender</div>
+                <select
+                  name="gender"
+                  value={gender}
+                  onChange={e => setGender(e.target.value)}
+                  style={styles.input}
+                >
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
+              {/* Age */}
+              <div>
+                <div style={styles.label}>Age</div>
+                <input
+                  type="number"
+                  name="age"
+                  value={age}
+                  onChange={e => setAge(e.target.value)}
+                  min={10}
+                  max={100}
+                  style={styles.input}
+                />
+              </div>
+              {/* Cardio Component */}
+              <div>
+                <div style={styles.label}>Cardio Component</div>
+                <select
+                  name="cardioComp"
+                  value={cardioComp}
+                  onChange={e => setCardioComp(e.target.value)}
+                  style={styles.input}
+                >
+                  {CARDIO_OPTIONS.map(opt => (
+                    <option key={opt.key} value={opt.key}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* Cardio Value */}
+              <div>
+                <div style={styles.label}>{CARDIO_OPTIONS.find(opt => opt.key === cardioComp)?.label}</div>
+                <input
+                  type={cardioComp === "run" ? "text" : "number"}
+                  name={cardioComp}
+                  value={values[cardioComp]}
+                  onChange={handleChange}
+                  style={styles.input}
+                  placeholder={cardioComp === "run" ? "mm:ss" : undefined}
+                />
+                <div style={{ fontSize: 15, color: palette.label, marginTop: 2 }}>{getMinMax("cardio")}</div>
+                {fieldErrors.cardio && <div style={styles.error}>{fieldErrors.cardio}</div>}
+                {fieldWarnings.cardio && <div style={{ ...styles.error, color: palette.warning }}>{fieldWarnings.cardio}</div>}
+              </div>
+              {/* Upper Component */}
+              <div>
+                <div style={styles.label}>Upper Body Component</div>
+                <select
+                  name="upperComp"
+                  value={upperComp}
+                  onChange={e => setUpperComp(e.target.value)}
+                  style={styles.input}
+                >
+                  {UPPER_OPTIONS.map(opt => (
+                    <option key={opt.key} value={opt.key}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* Upper Value */}
+              <div>
+                <div style={styles.label}>{UPPER_OPTIONS.find(opt => opt.key === upperComp)?.label}</div>
+                <input
+                  type="number"
+                  name={upperComp}
+                  value={values[upperComp]}
+                  onChange={handleChange}
+                  style={styles.input}
+                />
+                <div style={{ fontSize: 15, color: palette.label, marginTop: 2 }}>{getMinMax("upper")}</div>
+                {fieldErrors.upper && <div style={styles.error}>{fieldErrors.upper}</div>}
+                {fieldWarnings.upper && <div style={{ ...styles.error, color: palette.warning }}>{fieldWarnings.upper}</div>}
+              </div>
+              {/* Core Component */}
+              <div>
+                <div style={styles.label}>Core Component</div>
+                <select
+                  name="coreComp"
+                  value={coreComp}
+                  onChange={e => setCoreComp(e.target.value)}
+                  style={styles.input}
+                >
+                  {CORE_OPTIONS.map(opt => (
+                    <option key={opt.key} value={opt.key}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* Core Value */}
+              <div>
+                <div style={styles.label}>{CORE_OPTIONS.find(opt => opt.key === coreComp)?.label}</div>
+                <input
+                  type={coreComp === "plank" ? "text" : "number"}
+                  name={coreComp}
+                  value={values[coreComp]}
+                  onChange={handleChange}
+                  style={styles.input}
+                  placeholder={coreComp === "plank" ? "mm:ss" : undefined}
+                />
+                <div style={{ fontSize: 15, color: palette.label, marginTop: 2 }}>{getMinMax("core")}</div>
+                {fieldErrors.core && <div style={styles.error}>{fieldErrors.core}</div>}
+                {fieldWarnings.core && <div style={{ ...styles.error, color: palette.warning }}>{fieldWarnings.core}</div>}
+              </div>
+              <button type="submit" style={{ ...styles.button, fontSize: 28, marginTop: 24, borderRadius: 12, background: '#0a2d5c' }}>
+                Calculate
+              </button>
+              {error && <div style={styles.error}>{error}</div>}
+            </form>
+            {/* Results Section */}
+            {result && (
+              <div style={styles.card}>
+                <div style={styles.resultLabel}>Results</div>
+                <div style={{ margin: "8px 0", color: palette.text }}>
+                  <div>Cardio Points: {result.cardio_points !== undefined ? result.cardio_points.toFixed(2) : "--"}</div>
+                  <div>Upper Points: {result.upper_points !== undefined ? result.upper_points.toFixed(2) : "--"}</div>
+                  <div>Core Points: {result.core_points !== undefined ? result.core_points.toFixed(2) : "--"}</div>
+                  <div>Total Score: {result.total_score !== undefined ? result.total_score.toFixed(2) : "--"}</div>
+                  <div>Overall Rating: {getOverallRating(result.total_score)}</div>
+                </div>
+              </div>
+            )}
+            {/* Footer */}
+            <footer style={{ marginTop: 40, fontSize: 15, color: palette.text, textAlign: "center", opacity: 0.85 }}>
+              <div>For bug reports, suggestions, and feedback, please feel free to email us at <a href="mailto:usafptcalc@protonmail.com" style={{ color: palette.accent, textDecoration: "underline" }}>usafptcalc@protonmail.com</a>.</div>
+              <div>© 2025 USAF PT Calc. All rights reserved.</div>
+              <div>This site is not endorsed by the U.S. Air Force.</div>
+            </footer>
+            {/* Menu Button */}
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              style={{
+                position: "fixed",
+                top: 24,
+                right: 24,
+                zIndex: 2100,
+                background: "#174ea6",
+                color: "#fff",
+                border: "none",
+                borderRadius: "50%",
+                width: 48,
+                height: 48,
+                fontSize: 28,
+                cursor: "pointer",
+              }}
+              aria-label="Open menu"
+            >
+              ☰
+            </button>
+            {/* Slide-out Menu */}
+            {showMenu && (
+              <div
+                style={{
+                  position: "fixed",
+                  top: 0,
+                  right: 0,
+                  width: 260,
+                  height: "100vh",
+                  background: palette.menuBg,
+                  boxShadow: "-2px 0 16px 0 rgba(0,0,0,0.12)",
+                  zIndex: 2000,
+                  padding: 24,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 16,
+                  transition: "background 0.3s",
+                }}
+              >
+                <button
+                  onClick={() => setShowMenu(false)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    fontSize: 28,
+                    color: palette.accent,
+                    alignSelf: "flex-end",
+                    cursor: "pointer",
+                  }}
+                  aria-label="Close menu"
+                >
+                  ×
+                </button>
+                <Link to="/faq" style={{ color: palette.accent, textDecoration: "none", fontWeight: 600 }}>FAQ</Link>
+                <Link to="/contact" style={{ color: palette.accent, textDecoration: "none", fontWeight: 600 }}>Contact</Link>
+                <a href="https://www.afpc.af.mil/Portals/70/documents/FITNESS/dafman36-2905.pdf" target="_blank" rel="noopener noreferrer" style={{ color: palette.accent, textDecoration: "none", fontWeight: 600 }}>DAFMAN 36-2905</a>
+                <a href="https://www.afpc.af.mil/Portals/70/documents/FITNESS/5%20Year%20Chart%20Scoring%20Including%20Optional%20Component%20Standards%20-%2020211111%200219.pdf" target="_blank" rel="noopener noreferrer" style={{ color: palette.accent, textDecoration: "none", fontWeight: 600 }}>Scoring Charts</a>
+                {/* Dark Mode Toggle */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '8px 0 0 0' }}>
+                  <span style={{ color: palette.accent, fontWeight: 600, fontSize: 16 }}>Dark Mode</span>
+                  <label style={{ display: 'inline-block', position: 'relative', width: 44, height: 24 }}>
+                    <input
+                      type="checkbox"
+                      checked={darkMode}
+                      onChange={e => {
+                        setDarkMode(e.target.checked);
+                        localStorage.setItem('usafptcalc_darkmode', e.target.checked ? 'dark' : 'light');
+                        window.dispatchEvent(new Event('darkModeChanged'));
+                      }}
+                      style={{ opacity: 0, width: 0, height: 0 }}
+                      aria-label="Toggle dark mode"
+                    />
+                    <span style={{
+                      position: 'absolute',
+                      cursor: 'pointer',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: darkMode ? palette.accent : '#ccc',
+                      borderRadius: 24,
+                      transition: 'background 0.2s',
+                    }}></span>
+                    <span style={{
+                      position: 'absolute',
+                      left: darkMode ? 22 : 2,
+                      top: 2,
+                      width: 20,
+                      height: 20,
+                      background: '#fff',
+                      borderRadius: '50%',
+                      transition: 'left 0.2s',
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+                    }}></span>
+                  </label>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-      )}
-      {/* Footer */}
-      <footer style={{ marginTop: 40, fontSize: 15, color: palette.text, textAlign: "center", opacity: 0.85 }}>
-        <div>For bug reports, suggestions, and feedback, please feel free to email us at <a href="mailto:usafptcalc@protonmail.com" style={{ color: palette.accent, textDecoration: "underline" }}>usafptcalc@protonmail.com</a>.</div>
-        <div>© 2025 USAF PT Calc. All rights reserved.</div>
-        <div>This site is not endorsed by the U.S. Air Force.</div>
-      </footer>
-      {/* Menu Button */}
-      <button
-        onClick={() => setShowMenu(!showMenu)}
-        style={{
-          position: "fixed",
-          top: 24,
-          right: 24,
-          zIndex: 2100,
-          background: "#174ea6",
-          color: "#fff",
-          border: "none",
-          borderRadius: "50%",
-          width: 48,
-          height: 48,
-          fontSize: 28,
-          cursor: "pointer",
-        }}
-        aria-label="Open menu"
-      >
-        ☰
-      </button>
-      {/* Slide-out Menu */}
-      {showMenu && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            right: 0,
-            width: 260,
-            height: "100vh",
-            background: "#fff",
-            boxShadow: "-2px 0 16px 0 rgba(0,0,0,0.12)",
-            zIndex: 2000,
-            padding: 24,
-            display: "flex",
-            flexDirection: "column",
-            gap: 16,
-          }}
-        >
-          <button
-            onClick={() => setShowMenu(false)}
-            style={{
-              background: "none",
-              border: "none",
-              fontSize: 28,
-              color: "#174ea6",
-              alignSelf: "flex-end",
-              cursor: "pointer",
-            }}
-            aria-label="Close menu"
-          >
-            ×
-          </button>
-          <Link to="/faq" style={{ color: "#174ea6", textDecoration: "none", fontWeight: 600 }}>FAQ</Link>
-          <Link to="/contact" style={{ color: "#174ea6", textDecoration: "none", fontWeight: 600 }}>Contact</Link>
-          <a href="https://www.afpc.af.mil/Portals/70/documents/FITNESS/dafman36-2905.pdf" target="_blank" rel="noopener noreferrer" style={{ color: "#174ea6", textDecoration: "none", fontWeight: 600 }}>DAFMAN 36-2905</a>
-          <a href="https://www.afpc.af.mil/Portals/70/documents/FITNESS/5%20Year%20Chart%20Scoring%20Including%20Optional%20Component%20Standards%20-%2020211111%200219.pdf" target="_blank" rel="noopener noreferrer" style={{ color: "#174ea6", textDecoration: "none", fontWeight: 600 }}>Scoring Charts</a>
-        </div>
-      )}
-    </div>
+      </div>
+    </>
   );
 }
 
 function App() {
+  const [darkMode, setDarkMode] = useState(() => {
+    const stored = localStorage.getItem('usafptcalc_darkmode');
+    if (stored === 'light') return false;
+    if (stored === 'dark') return true;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e) => {
+      if (!localStorage.getItem('usafptcalc_darkmode')) setDarkMode(e.matches);
+    };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
   return (
     <Router>
       <Routes>
-        <Route path="/faq" element={<FAQ />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="*" element={<AppContent />} />
+        <Route path="/faq" element={<FAQ darkMode={darkMode} />} />
+        <Route path="/contact" element={<Contact darkMode={darkMode} />} />
+        <Route path="*" element={<AppContent darkMode={darkMode} setDarkMode={setDarkMode} />} />
       </Routes>
     </Router>
   );
