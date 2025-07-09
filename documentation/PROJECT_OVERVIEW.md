@@ -1,5 +1,42 @@
 # USAF PT Test Calculator — Project Overview
 
+## Future Improvements
+
+- Add automated unit, integration, and end-to-end tests for frontend and backend
+- Set up CI/CD (e.g., GitHub Actions) for automated testing and deployment
+- Add analytics (privacy-friendly, e.g., Plausible or Fathom) and error monitoring (e.g., Sentry)
+- Run and address Lighthouse accessibility/performance audits
+- Add a user feedback form or link for suggestions/bug reports
+- Expand FAQ and documentation as needed
+- Add a changelog or “What’s New” section for users
+- Consider user accounts for saving results/history (optional)
+- Add PWA support for offline use and installability (optional)
+- Add more visualizations (charts, progress bars, etc.) (optional)
+
+---
+
+## Long-Term Vision: airforcefit.com
+
+The long-term goal is to evolve usafptcalc.com into airforcefit.com—a comprehensive Air Force-style fitness platform. Planned features include:
+
+- User accounts for fitness tracking and progress history
+- Premium membership with AI-powered fitness and nutrition plans
+- Expanded workout and nutrition logging
+- Personalized dashboards and analytics
+- Community features (forums, leaderboards, challenges)
+- Scalable backend and secure data management
+- Seamless transition and rebranding from usafptcalc.com
+
+**High-Level Roadmap:**
+1. Foundation & Planning: Define vision, research, and plan transition.
+2. Core Platform Expansion: User authentication, profiles, and dashboard.
+3. Fitness Tracking & Analytics: Logging, visualization, and goal setting.
+4. AI & Premium Features: Personalized plans, payment integration, onboarding.
+5. Community & Growth: Social features, marketing, and user feedback.
+6. Transition & Launch: Rebrand, migrate, and support users.
+
+---
+
 ## Project Purpose
 A professional, modular, and accurate web application for calculating United States Air Force Physical Training (USAF PT) test scores. The app is designed for both desktop and mobile, providing instant feedback, official requirements, and a modern, user-friendly interface. It is suitable for both personal and organizational use, and is deployable on Fly.io or similar platforms.
 
@@ -40,6 +77,7 @@ A professional, modular, and accurate web application for calculating United Sta
 - Dockerfile for containerized deployment (uses Gunicorn + Uvicorn, exposes port 8080).
 - Ready for Fly.io or similar cloud platforms.
 - React frontend built and served as static files by FastAPI.
+- **Production site:** https://www.usafptcalc.com
 
 ## Results Section and Footer
 
